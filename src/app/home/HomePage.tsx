@@ -194,7 +194,7 @@ const HomePage = (props: HomePageProps) => {
         ))}
 
         {response && response.length > 0 && (
-          <div className="mt-4">
+          <div className="mt-4 pb-20">
             <h2 className="text-lg font-bold">Response:</h2>
             <ul className="list-disc pl-5">
               {response.map((res, idx) => (
