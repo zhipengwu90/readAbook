@@ -1,8 +1,6 @@
-import { AzureKeyCredential } from "@azure/core-auth";
-
 import * as SpeechSDK from "microsoft-cognitiveservices-speech-sdk";
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
   const data = await request.text();
 
   const apiKey = process.env.SPEECH_KEY;
@@ -11,18 +9,14 @@ export async function POST(request: Request) {
   if (!apiKey || !region) {
     return new Response(
       JSON.stringify({
-        error:
-          "SPEECH_KEY and SPEECH_REGION must be defined in environment variables.",
+        error: "SPEECH_KEY and SPEECH_REGION must be defined in environment variables.",
       }),
-      { status: 500, headers: { "Content-microsoft": "application/json" } }
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 
-  return new Promise((resolve, reject) => {
-    const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(
-      apiKey,
-      region
-    );
+  return await new Promise<Response>((resolve) => {
+    const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(apiKey, region);
     speechConfig.speechSynthesisOutputFormat =
       SpeechSDK.SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3;
     speechConfig.speechSynthesisVoiceName = "en-US-AndrewMultilingualNeural";
@@ -31,7 +25,6 @@ export async function POST(request: Request) {
     synthesizer.speakTextAsync(
       data,
       (result) => {
-        console.log("Speech synthesis result:", result);
         if (
           result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted
         ) {
@@ -47,20 +40,20 @@ export async function POST(request: Request) {
           );
         } else {
           resolve(
-            new Response(JSON.stringify({ error: "Speech synthesis failed" }), {
-              status: 500,
-              headers: { "Content-Type": "application/json" },
-            })
+            new Response(
+              JSON.stringify({ error: "Speech synthesis failed" }),
+              { status: 500, headers: { "Content-Type": "application/json" } }
+            )
           );
         }
         synthesizer.close();
       },
       (error) => {
         resolve(
-          new Response(JSON.stringify({ error: error }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-          })
+          new Response(
+            JSON.stringify({ error: error }),
+            { status: 500, headers: { "Content-Type": "application/json" } }
+          )
         );
         synthesizer.close();
       }

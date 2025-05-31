@@ -2,7 +2,7 @@ import { ImageAnalysisClient } from "@azure-rest/ai-vision-image-analysis";
 import createClient from "@azure-rest/ai-vision-image-analysis";
 import { AzureKeyCredential } from "@azure/core-auth";
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
   const formData = await request.formData();
 
   const apiKey = process.env.VISION_KEY;
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
   const client = createClient(endpoint, new AzureKeyCredential(apiKey));
   const features = ["Caption", "Read"];
 
-  const results = [];
+  const results: any = [];
   for (const file of files) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -71,8 +71,12 @@ export async function POST(request: Request) {
     });
   }
 
-  return new Response(JSON.stringify({ results }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
+  return await new Promise<Response>((resolve) => {
+    resolve(
+      new Response(JSON.stringify({ results }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
   });
 }
