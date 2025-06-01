@@ -8,6 +8,10 @@ import CircularProgress from "@mui/material/CircularProgress";
 import PauseCircleIcon from "@mui/icons-material/PauseCircle";
 import Box from "@mui/material/Box";
 import AudioPlayerButton from "./AudioPlayerButton";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+
+import Select, { SelectChangeEvent } from "@mui/material/Select";
 interface HomePageProps {
   password?: string;
 }
@@ -20,6 +24,9 @@ type ResponseObject = {
 const HomePage = (props: HomePageProps) => {
   const { password } = props;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [language, setLanguage] = useState<string>(
+    "en-US-AndrewMultilingualNeural"
+  );
 
   const [images, setImages] = useState<File[]>([]);
 
@@ -75,13 +82,28 @@ const HomePage = (props: HomePageProps) => {
         const result = await response.json();
 
         setResponse((prev) =>
-          prev ? [...prev, ...(result.results || [result])] : [...(result.results || [result])]
+          prev
+            ? [...prev, ...(result.results || [result])]
+            : [...(result.results || [result])]
         );
       } catch (error) {
         setResponse((prev) =>
           prev
-            ? [...prev, { filename: images[i].name, caption: "", text: "Error processing image" }]
-            : [{ filename: images[i].name, caption: "", text: "Error processing image" }]
+            ? [
+                ...prev,
+                {
+                  filename: images[i].name,
+                  caption: "",
+                  text: "Error processing image",
+                },
+              ]
+            : [
+                {
+                  filename: images[i].name,
+                  caption: "",
+                  text: "Error processing image",
+                },
+              ]
         );
       }
     }
@@ -93,6 +115,59 @@ const HomePage = (props: HomePageProps) => {
   const handleClear = () => {
     setImages([]);
     setResponse(undefined);
+    const handleSendImages = async () => {
+      if (images.length === 0) {
+        alert("Please upload images first.");
+        return;
+      }
+
+      setIsLoading(true);
+      setResponse([]); // Clear previous responses
+
+      for (let i = 0; i < images.length; i++) {
+        const formData = new FormData();
+        formData.append("images", images[i]);
+
+        try {
+          const response = await fetch("/api/imageAPI", {
+            method: "POST",
+            body: formData,
+          });
+          if (!response.ok) {
+            throw new Error("Failed to send image");
+          }
+          const result = await response.json();
+
+          setResponse((prev) =>
+            prev
+              ? [...prev, ...(result.results || [result])]
+              : [...(result.results || [result])]
+          );
+        } catch (error) {
+          setResponse((prev) =>
+            prev
+              ? [
+                  ...prev,
+                  {
+                    filename: images[i].name,
+                    caption: "",
+                    text: "Error processing image",
+                  },
+                ]
+              : [
+                  {
+                    filename: images[i].name,
+                    caption: "",
+                    text: "Error processing image",
+                  },
+                ]
+          );
+        }
+      }
+
+      setIsLoading(false);
+      setImageSend(true); // Set imageSend to true after all images are sent
+    };
     setImageSend(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = ""; // Clear the file input
@@ -158,6 +233,37 @@ const HomePage = (props: HomePageProps) => {
     );
   }
 
+  // <MenuItem value="en-US-AndrewMultilingualNeural">EN-Andrew</MenuItem>
+  //         <MenuItem value="en-US-JaneNeural">EN-Jane</MenuItem>
+  //         <MenuItem value="en-US-Emma:DragonHDLatestNeural">EN-Emma</MenuItem>
+
+  //         <MenuItem value="zh-CN-YunxiNeural">CN-Yunxi</MenuItem>
+  //         {/* <MenuItem value="zh-CN-YunxiNeural-Boy">CN-Yunxi-boy</MenuItem> */}
+  //         <MenuItem value="zh-CN-Xiaoxiao:DragonHDFlashLatestNeural">
+  //           CN-Xiaoxiao
+  //         </MenuItem>
+  //         <MenuItem value=" zh-CN-YunjianNeural">CN-Yunjian</MenuItem>
+  const MyVoice = () => {
+    if (language === "en-US-AndrewMultilingualNeural") {
+      return <AudioPlayerButton language={language} text={"Hi,This is Andrew"} />;
+    }
+    if (language === "en-US-JaneNeural") {
+      return <AudioPlayerButton language={language} text={"Hi,This is Jane"} />;
+    }
+    if (language === "en-US-EmmaNeural") {
+      return <AudioPlayerButton language={language} text={"Hi,This is Emma"} />;
+    }
+    if (language === "zh-CN-YunxiNeural") {
+      return <AudioPlayerButton language={language} text={"你好，这是云溪"} />;
+    }
+    if (language === "zh-CN-XiaoxiaoNeural") {
+      return <AudioPlayerButton language={language} text={"你好，这是小小"} />;
+    }
+    if (language === "zh-CN-YunjianNeural") {
+      return <AudioPlayerButton language={language} text={"你好，这是云剑"} />;
+    }
+  };
+
   return (
     <div className="flex flex-col items-center h-screen p-10">
       {isLoading && (
@@ -174,6 +280,32 @@ const HomePage = (props: HomePageProps) => {
           Clear
         </Button>
       )}
+      <div className="flex flex-row items-center justify-center w-full max-w-md">
+        <Select
+          labelId="demo-simple-select-standard-label"
+          id="demo-simple-select-standard"
+          label="language"
+          onChange={(e: SelectChangeEvent<string>) => {
+            setLanguage(e.target.value);
+          }}
+          className="mt-4 mb-4"
+          value={language}
+        >
+          <MenuItem value="en-US-AndrewMultilingualNeural">EN-Andrew</MenuItem>
+          <MenuItem value="en-US-JaneNeural">EN-Jane</MenuItem>
+          <MenuItem value="en-US-EmmaNeural">EN-Emma</MenuItem>
+
+          <MenuItem value="zh-CN-YunxiNeural">CN-Yunxi</MenuItem>
+          {/* <MenuItem value="zh-CN-YunxiNeural-Boy">CN-Yunxi-boy</MenuItem> */}
+          <MenuItem value="zh-CN-XiaoxiaoNeural">
+            CN-Xiaoxiao
+          </MenuItem>
+          <MenuItem value="zh-CN-YunjianNeural">CN-Yunjian</MenuItem>
+        </Select>
+
+        <MyVoice />
+      </div>
+
       <input
         type="file"
         ref={fileInputRef}
@@ -200,12 +332,12 @@ const HomePage = (props: HomePageProps) => {
             <ul className="list-disc pl-5">
               {response.map((res, idx) => (
                 <li key={idx}>
-                  <span>Picture shows:</span> {res.caption}
+                  {/* <span>Picture shows:</span> {res.caption}
                   <AudioPlayerButton text={"Picture shows" + res.caption} />
-                  <br />
-                  <span>Text: </span>
+                  <br /> */}
+                  <span>Picture {idx + 1}: </span>
                   {res.text}
-                  <AudioPlayerButton text={res.text} />
+                  <AudioPlayerButton language={language} text={res.text} />
                 </li>
               ))}
             </ul>

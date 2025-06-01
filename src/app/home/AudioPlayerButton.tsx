@@ -1,21 +1,30 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import PauseCircleIcon from "@mui/icons-material/PauseCircle";
 
-const AudioPlayerButton = ({ text }: { text: string }) => {
+interface props {
+  text: string;
+  language: string;
+}
+
+const AudioPlayerButton = ({ text, language }: props) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioLoaded, setAudioLoaded] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  console.log("language", language);
 
   const handleAudio = async () => {
     if (!audioLoaded) {
       setIsDisabled(true); // Disable only when fetching audio
       const response = await fetch("/api/speedAPI", {
         method: "POST",
-        body: text,
-        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({
+          text: text,
+          language: language,
+        }),
+        headers: { "Content-Type": "application/json" },
       });
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
@@ -42,6 +51,15 @@ const AudioPlayerButton = ({ text }: { text: string }) => {
       }
     }
   };
+
+  useEffect(() => {
+    setAudioLoaded(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+      setIsPlaying(false);
+    }
+  }, [language, text]);
 
   return (
     <IconButton
