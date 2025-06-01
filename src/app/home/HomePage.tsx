@@ -67,8 +67,14 @@ const HomePage = (props: HomePageProps) => {
       const response = await fetch("/api/imageAPI", {
         method: "POST",
         body: formData,
+        headers: {
+          Accept: "application/json",
+        },
       });
       if (!response.ok) {
+        console.error("Failed to send images:", response.statusText);
+        console.log("Response:", response);
+        setIsLoading(false);
         throw new Error("Failed to send images");
       }
 
