@@ -245,7 +245,9 @@ const HomePage = (props: HomePageProps) => {
   //         <MenuItem value=" zh-CN-YunjianNeural">CN-Yunjian</MenuItem>
   const MyVoice = () => {
     if (language === "en-US-AndrewMultilingualNeural") {
-      return <AudioPlayerButton language={language} text={"Hi,This is Andrew"} />;
+      return (
+        <AudioPlayerButton language={language} text={"Hi,This is Andrew"} />
+      );
     }
     if (language === "en-US-JaneNeural") {
       return <AudioPlayerButton language={language} text={"Hi,This is Jane"} />;
@@ -282,13 +284,13 @@ const HomePage = (props: HomePageProps) => {
       )}
       <div className="flex flex-row items-center justify-center w-full max-w-md">
         <Select
+          className="bg-white    mt-4 mb-4"
           labelId="demo-simple-select-standard-label"
           id="demo-simple-select-standard"
           label="language"
           onChange={(e: SelectChangeEvent<string>) => {
             setLanguage(e.target.value);
           }}
-          className="mt-4 mb-4"
           value={language}
         >
           <MenuItem value="en-US-AndrewMultilingualNeural">EN-Andrew</MenuItem>
@@ -297,9 +299,7 @@ const HomePage = (props: HomePageProps) => {
 
           <MenuItem value="zh-CN-YunxiNeural">CN-Yunxi</MenuItem>
           {/* <MenuItem value="zh-CN-YunxiNeural-Boy">CN-Yunxi-boy</MenuItem> */}
-          <MenuItem value="zh-CN-XiaoxiaoNeural">
-            CN-Xiaoxiao
-          </MenuItem>
+          <MenuItem value="zh-CN-XiaoxiaoNeural">CN-Xiaoxiao</MenuItem>
           <MenuItem value="zh-CN-YunjianNeural">CN-Yunjian</MenuItem>
         </Select>
 
