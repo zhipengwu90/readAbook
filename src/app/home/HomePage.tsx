@@ -58,41 +58,36 @@ const HomePage = (props: HomePageProps) => {
     }
 
     setIsLoading(true);
-    const formData = new FormData();
-    images.forEach((img, idx) => {
-      formData.append("images", img); // "images" is the field name
-    });
+    setResponse([]); // Clear previous responses
 
-    try {
-      const response = await fetch("/api/imageAPI", {
-        method: "POST",
-        body: formData,
-        headers: {
-          Accept: "application/json",
-        },
-      });
-      if (!response.ok) {
-        console.error("Failed to send images:", response.statusText);
-        console.log("Response:", response);
-        setIsLoading(false);
-        throw new Error("Failed to send images");
+    for (let i = 0; i < images.length; i++) {
+      const formData = new FormData();
+      formData.append("images", images[i]);
+
+      try {
+        const response = await fetch("/api/imageAPI", {
+          method: "POST",
+          body: formData,
+        });
+        if (!response.ok) {
+          throw new Error("Failed to send image");
+        }
+        const result = await response.json();
+
+        setResponse((prev) =>
+          prev ? [...prev, ...(result.results || [result])] : [...(result.results || [result])]
+        );
+      } catch (error) {
+        setResponse((prev) =>
+          prev
+            ? [...prev, { filename: images[i].name, caption: "", text: "Error processing image" }]
+            : [{ filename: images[i].name, caption: "", text: "Error processing image" }]
+        );
       }
-
-      const result = await response.text();
-
-      let resultObject = JSON.parse(result);
-      setResponse(resultObject);
-      console.log("Response Object:", resultObject.results);
-
-      setIsLoading(false);
-      setImageSend(true);
-      setResponse(resultObject.results);
-
-      //   alert("Images sent successfully!");
-    } catch (error) {
-      console.error("Error sending images:", error);
-      alert("Error sending images. Please try again.");
     }
+
+    setIsLoading(false);
+    setImageSend(true); // Set imageSend to true after all images are sent
   };
 
   const handleClear = () => {
