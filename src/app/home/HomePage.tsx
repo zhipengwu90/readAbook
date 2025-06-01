@@ -305,6 +305,17 @@ const HomePage = (props: HomePageProps) => {
 
         <MyVoice />
       </div>
+      {images.length !== 0 && !imageSend && (
+        <div>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleSendImages}
+          >
+            Send Images
+          </Button>
+        </div>
+      )}
 
       <input
         type="file"
@@ -341,18 +352,6 @@ const HomePage = (props: HomePageProps) => {
                 </li>
               ))}
             </ul>
-          </div>
-        )}
-
-        {images.length !== 0 && !imageSend && (
-          <div>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={handleSendImages}
-            >
-              Send Images
-            </Button>
           </div>
         )}
 
